@@ -1,3 +1,4 @@
+
 class StrategoBoard():
 	def __init__(self):
 		self.MapData = [10]
@@ -12,12 +13,15 @@ class StrategoBoard():
 		for i in range(0, 10):
 			for j in range(0,10):
 				if i == 4:
+					#Is it a lake?
 					if j == 2 or j == 3 or j == 6 or j == 7:
-						self.MapData[i].append('L','L')
+						self.MapData[i].append('L','L', 'L')
 				elif i == 5:
+					#It still could be a lake
 					if j == 2 or j == 3 or j == 6 or j ==7:
-						self.MapData[i].append('L','L')
+						self.MapData[i].append('L','L', 'L')
 				else:
+					#It's not a lake
 					self.MapData[i].append(['','',''])
 
 	#Gets where your army is on the map
@@ -30,10 +34,10 @@ class StrategoBoard():
 		#Returns a list of locations for your pieces
 		return mine
 
-	def Piece(self, x, y):
+	def getPiece(self, x, y):
 		return self.MapData[x][y][1]
 
-	def Color(self, x, y):
+	def getColor(self, x, y):
 		return self.MapData[x][y][0]
 
 	def isKnown(self,x,y):
