@@ -1,0 +1,1 @@
+The BoardSetup.txt is toward the lake

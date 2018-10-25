@@ -2,10 +2,16 @@ Need a way to set up the board. Will go with general setup
 Before expirimenting. Ask Selmer. 
 
 https://arxiv.org/pdf/1509.01549.pdf
-	We need to make our own stockfish evaluation
-
+https://arxiv.org/pdf/1603.01121.pdf
+	We need to make our own evaluation
+	2, 3,. . ., 10, B. F, S
+	Probably Q-Learning, do some research/planning
 	If flag is captured, game is won, plus 1000?
 	When do we adjust weights on pieces?
 	If piece is lost, score goes down. 
 
 http://library.msri.org/books/Book29/files/schaeffer.pdf
+https://www.tensorflow.org/api_docs/python/tf/Session
+
+http://www.ultrastratego.com/setups.php
+For stratego setups

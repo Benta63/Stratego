@@ -1,13 +1,17 @@
-
+import os
 class StrategoBoard():
 	def __init__(self):
 		self.MapData = [10]
 		#Going to be tuples, first color, second piece
+	
+	#Makes a blank board
+	#Call this first before anything else
 	def setBoard(self):
 		#Lakes are [4, 2] [4,3] [4,6] [4,7]
 		#		   [5,2] [5,3] [5,6] [5,7] [row, column]
-		#For each board space, it will be (color, piece, known). (L,L) in the case of lakes.
+		#For each board space, it will be (color, piece, known). (L,L,L) in the case of lakes.
 		#S = Spy, 1-10 (strings) = Numbers, B = Bomb, F = Flag
+		#Color is 'Mine' or 'Theirs'
 		#Get the coordinates of the lakes
 		#First we initialize an empty board
 		for i in range(0, 10):
@@ -15,14 +19,35 @@ class StrategoBoard():
 				if i == 4:
 					#Is it a lake?
 					if j == 2 or j == 3 or j == 6 or j == 7:
-						self.MapData[i].append('L','L', 'L')
+						self.MapData[i][j].append(['L','L', 'L'])
 				elif i == 5:
 					#It still could be a lake
 					if j == 2 or j == 3 or j == 6 or j ==7:
-						self.MapData[i].append('L','L', 'L')
+						self.MapData[i][j].append(['L','L', 'L'])
 				else:
 					#It's not a lake
-					self.MapData[i].append(['','',''])
+					self.MapData[i][j].append(['','',''])
+
+
+	#Reads in the board setup from a text file
+	def ReadBoard(text, side, self):
+		#First, we organize the file
+		f = open(text)
+		lines = f.readlines()
+		data = [line.split() for line in lines]
+
+		#Which pieces are we reading in?
+		if side == "Mine":
+			for line in range(0, len(data)):
+				for col in range(0, len(line)):
+					MapData[line][col] = (['Mine', data[line][col], 'K'])
+		else:
+			#First of all, their pieces are on the other side, so the first line is actually the tenth
+			#So, 0 is 9, 1 is 8, 3 is 7
+			for line in range(0, len(data)):
+				for rank in range(0, len(line)):
+					MapData[9-line][col] = (['Theirs', data[line][col], 'U'])
+
 
 	#Gets where your army is on the map
 	def getArmy(self):
