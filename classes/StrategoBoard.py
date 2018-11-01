@@ -20,14 +20,14 @@ class StrategoBoard():
 				if i == 4:
 					#Is it a lake?
 					if j == 2 or j == 3 or j == 6 or j == 7:
-						self.MapData[i][j].append(['L','L', 'L'])
+						self.MapData[i][j] =['L','L', 'L']
 				elif i == 5:
 					#It still could be a lake
 					if j == 2 or j == 3 or j == 6 or j ==7:
-						self.MapData[i][j].append(['L','L', 'L'])
+						self.MapData[i][j] = ['L','L', 'L']
 				else:
 					#It's not a lake
-					self.MapData[i][j].append(['','',''])
+					self.MapData[i][j] = ['','','']
 
 
 	#Reads in the board setup from a text file

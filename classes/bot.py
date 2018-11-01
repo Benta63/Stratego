@@ -20,6 +20,8 @@ print(board.knownEnemy())
 print(board.MapData[0][0])
 print(board.isThere(0,0)) #True
 print(board.isThere(5,0)) #False
+
+print(board.MapData)
 #Testing ActionManager
 #ActionManager.ActionManager()
 #ting = ActionManager.ActionManager()
@@ -27,3 +29,5 @@ PlaceManager.updateBoard(0,0,0,1,board) #Illegal
 PlaceManager.updateBoard(0,3,0,3,board) #Illegal
 PlaceManager.updateBoard(3,0,4,0,board) #Legal
 PlaceManager.updateBoard(0,3,0,4,board) #Illegal
+
+#Ecerything is tested
