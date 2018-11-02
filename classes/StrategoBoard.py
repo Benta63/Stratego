@@ -3,6 +3,7 @@ class StrategoBoard():
 	def __init__(self):
 		self.MapData = [[['','','']for i in range(10)] for j in range(10)]
 		self.setBoard()
+		self.attack_threshold = 0.0
 		#Going to be tuples, first color, second piece
 	
 	#Makes a blank board
@@ -49,7 +50,6 @@ class StrategoBoard():
 				for col in range(0, 10):
 					self.MapData[9-line][col] = (['Theirs', data[line][col], 'U'])
 
-
 	#Gets where your army is on the map
 	def getArmy(self):
 		mine  = []
@@ -81,4 +81,39 @@ class StrategoBoard():
 				if self.isKnown(i,j) and self.getColor(i,j) == "Theirs": #K is for known
 					theirs.append([i,j])
 		return theirs
+
+	def totalEnemy(self):
+		theirs = []
+		for i in range(0, len(self.MapData)):
+			for j in range(0, len(self.MapData[i])):
+				theirs.append([i, j])
+		return theirs
+
+	def getFull(self, x, y):
+		return self.MapData[x][y]
+
+	def createTensor(self):
+		inputTensor = [0 for i in range(0, 10) for j in range(0, 10)]
+
+		for x in range(0, 10):
+			for y in range(0, 10):
+				inputTensor[(10 * x) + y] = self.board.getFull(x,y)
+
+	def printTensor(self, data):
+		output = ""
+		for i in range(len(data)):
+			output += str(data[i]) + "":
+			if (i+1)%10==0:
+				output += '\n'
+		return output
+
+
+			
+
+		return inputTensor
+
+
+	#Should I make a print board function??
+
+	#Maybe make a human interpretation??
 		
