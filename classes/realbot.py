@@ -34,7 +34,8 @@ class Bot(object):
 	def compute_reward(self):
 
 		#If they lose a piece on the first turn, e.g. scouting, its fine
-		if turn != 1:
+		#I may want to change this to the first few turns.
+		if turn > 2:
 			delta_pieces_known = abs(self.board.knownEnemy() - len(self.board.totalEnemy()))
 			delta_amount = 0
 			for i in range(0, 10):
@@ -44,11 +45,11 @@ class Bot(object):
 						#What if it's a bomb, or a spy? Also, miners are pretty important
 						if self.board.getPiece(i, j) == 'B':
 							delta_amount += 5
-						elif self.board.getPiece(i, j) == 'S'
+						elif self.board.getPiece(i, j) == 'S':
 							delta_amount += 8 #Let's try to protec the spy a bit
-
-						elif self.board.getPiece(i, j) == '3'
+						elif self.board.getPiece(i, j) == '3':
 							delta_amount += 5
+						#Flag or not? 
 						else:
 							delta_amount = delta_amount + float(self.board.getPiece(i, j))
 
