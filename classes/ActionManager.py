@@ -1,5 +1,5 @@
 import sys
-from StrategoBoard import StrategoBoard
+from . import StrategoBoard
 
 class PlaceManager(object):
 	#board is a StrategoBoard object

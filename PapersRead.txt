@@ -15,3 +15,6 @@ https://www.tensorflow.org/api_docs/python/tf/Session
 
 http://www.ultrastratego.com/setups.php
 For stratego setups
+
+On the Adam Optimizer in tf
+https://arxiv.org/pdf/1412.6980v8.pdf

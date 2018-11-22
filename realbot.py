@@ -1,12 +1,15 @@
-from sys include stderr, stdin, stdout
+from sys import stderr, stdin, stdout
 from classes import StrategoBoard
 from classes import ActionManager
-from ActionManager import PlaceManager 
+from classes.ActionManager import PlaceManager 
+from classes import helper
 from math import fmod, pi
+import math
 import time
 import numpy as np
 import _thread
-
+import NeuralNet
+import os
 #Do stuff with neural net
 
 class Bot(object):
@@ -22,8 +25,8 @@ class Bot(object):
 		self.newGame = False
 		self.gamesPlayed = 0
 		self.turn = 0
-		
-		self.Trainer = #Neural net shit
+
+		self.Trainer = NeuralNet.Trainer() #Neural net shit
 
 
 	def OnGameEnd(self):
@@ -35,7 +38,7 @@ class Bot(object):
 
 		#If they lose a piece on the first turn, e.g. scouting, its fine
 		#I may want to change this to the first few turns.
-		if turn > 2:
+		if self.turn > 2:
 			delta_pieces_known = abs(self.board.knownEnemy() - len(self.board.totalEnemy()))
 			delta_amount = 0
 			for i in range(0, 10):
@@ -65,15 +68,18 @@ class Bot(object):
 
 			return delta_amount + (delta_pieces_known * 2)
 		return 0
+
 	def run(self):
+		print("Running")
 		while not stdin.closed:
+			print ("Start of while")
 			try:
 				rawline = stdin.readline()
 				#End of file
 				if len(rawline) == 0:
 					break
 
-				line = rawline.strip():
+				line = rawline.strip()
 
 				if len(line) == 0:
 					continue
@@ -83,54 +89,59 @@ class Bot(object):
 
 				if command == 'setup_map':
 					self.setup_map(parts[1:])
-				elif command == 'update_map':
-					if self.turn != 0:
+				elif command == 'go':
+					print("Turn: {} | Games Played: {}\n".format(math.ceil(self.turn), self.gamesPlayed))
+
+					if self.turn == 0:
+						self.Trainer.init_episode(self.board, self.gamesPlayed, self.turn)
 						self.turn += 1
+					elif self.turn != 0:
+						self.turn += 1
+					#Something over here????
+					
+					moves = self.Trainer.get_moves(self.turn)
+					output = self.update_map(moves)
+					stdout.write(output)
+					stdout.flush()
+					
+					self.reward = self.compute_reward()
+					rewards = np.array([self.reward])
 
-					print("Turn: | Games Played{}\n".format(ceil(Turn/2), self.gamesPlayed))
-					self.update_map(parts[1:])
-					tensor = np.array(self.board.createTensor())
-
-					if self.episode_turn == 0:
-						self.Trainer.init_episode(tensor, self.gamesPlayed, self.gamesPlayed, self.turn)
-						self.episode_turn += 1
-
+					if self.gamesPlayed == 0:
+						self.Trainer.first_game(self.board, rewards)
 					else:
-						self.reward = self.compute_reward()
-						rewards = np.array([self.reward])
+						self.Trainer.trainReward(self.board, rewards, self.turn)
 
-						if self.gamesPlayed == 0:
-							self.Trainer.train_first_game(tensor, rewards)
-						else:
-							self.Trainer.train_reward(tensor, rewards, self.turn)
-					elif command == 'opponent_moves':
-						pass
-					elif command == "Game_Over":
-						self.OnGameEnd()
-						continue
-					else:
-						stderr.write('Unknown command: %s\n' % (command))
-						stderr.flush()
-					except EOFError:
-						return
+				elif command == 'opponent_moves':
+					pass
+				elif command == "Game_Over":
+					self.OnGameEnd()
+					continue
+				else:
+					stderr.write('Unknown command: %s\n' % (command))
+					stderr.flush()
+
+			except EOFError:
+				return
+			print ("End of While")
 
 	def setup_map(self, options):
 		#Sets up the map, assuming the inputs are text files
 
 		#The options will be my side and then their side		for i in range (0, len(options)):
-			if i == 0:
-				self.ReadBoard('Mine', options[0])
-			elif i == 1:
-				self.ReadBoard('Theirs', options[1]):
+		self.board.ReadBoard('Mine', options[0])
+		self.board.ReadBoard('Theirs', options[1])
+		print(self.board.MapData)
 
 	def update_map(self, options):
 		#My moves
 		#The options will be xstart, ystart, xend, yend
-		PlaceManager.updateBoard(options[0], options[1], options[2], options[3], self.board)
+		PlaceManager.updateBoard(int(options[0]), int(options[1]), int(options[2]), int(options[3]), self.board)
 
-		output = ("Games Played: {}\nTensod Data\n".format(self.gamesPlayed)
-		output += self.board.printTensor(self.board.createTensor())
+		output = ("Games Played: {}\nTensod Data\n".format(self.gamesPlayed))
+		output += self.board.printTensor()
 		output += '\n'
+		f = open('data\\output.txt', 'a+')
 		f.write(output)
 		f.close()
 

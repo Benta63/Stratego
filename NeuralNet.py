@@ -3,11 +3,16 @@ import random
 import tensorflow as tf
 import scipy.misc
 import os
-#Make Environments later
-
-
+from classes import helper
 import time
 import itertools
+from classes import StrategoBoard
+from classes import ActionManager
+from classes.ActionManager import PlaceManager
+
+#So the CPU extensions don't get in the way
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+
 class PlaceNetwork(object):
 	def __init__(self):
 		self.X = tf.placeholder("float", [None, 64])
@@ -31,22 +36,22 @@ class PlaceNetwork(object):
 
 		self.salience = tf.gradients(self.Advantage, self.X)
 
-		self.Qout = self.Value + tf.subtract(self.Advantage, tf.reduce_mean(self.Advantage, axis=1, keep_dims=True))
+		self.Qout = self.Value + tf.subtract(self.Advantage, tf.reduce_mean(self.Advantage, axis=1, keepdims=True))
 		self.predict = tf.argmax(self.Qout, 1)
 
 		#Getting the loss by getting the difference in squares between the target and the predicted Qs
 		self.targetQ = tf.placeholder(shape=[None], dtype=tf.float32)
 		self.actions = tf.placeholder(shape=[None], dtype=tf.int32)
-		self.actions_onehot = tf.onehot(self.actions, 32, dtype=tf.float32)
+		self.actions_onehot = tf.one_hot(self.actions, 32, dtype=tf.float32)
 
-		self.Q = tf.reduce_sum(tf.end_multiply(self.Qout, self.actions_onehot), axis=1)
+		self.Q = tf.reduce_sum(tf.multiply(self.Qout, self.actions_onehot), axis=1)
 
 		self.td_error = tf.square(self.targetQ - self.Q)
 		self.loss = tf.reduce_mean(self.td_error)
 		self.trainer = tf.train.AdamOptimizer(learning_rate= 0.00001)
 		self.updateModel = self.trainer.minimize(self.loss)
 
-#Should I make a dueling NN?? Would be literally the same in all but name of the place network
+#For now placing troops is known, but may want to add a placing network later.
 
 class experience_buffer(object):
 	def __init__(self, buffer_size= 100000):
@@ -71,11 +76,10 @@ class Trainer(object):
 		self.pre_steps = 50 #Number of random actions before training begins
 		self.startE = 1 #Starting chance of random action
 		self.endE = 0.1 #Final chance of random action
+		self.steps = 100 #Amount of steps of training to reduce startE to endE
 		self.loadModel = False #Should we load a saved model?
 		self.timePerStep = 1 #Length of each step used
 		self.load_model = False
-
-
 
 		self.tau = 0.001
 
@@ -84,19 +88,16 @@ class Trainer(object):
 		#Here we create the networks
 
 		## Add networks after you create them
-		self.rewardPath = "data/rewards"
+		self.rewardPath = "data\\rewards.txt"
 		self.clearFile(self.rewardPath)
-		#Define this function lower
 		self.mainPN = PlaceNetwork()
 		self.targetPN = PlaceNetwork()
-
-		#self.clearFile(self.rewardPath)
 	 	
 	def updateTargetGraph(self, tfVars, tau):
 		total_vars = len(tfVars)
 		op_holder = []
-		for ids, var in enumerate(tfvars[0:total_vars//2]):
-			op_holder.append(tfvars[ids:total_vars//2].assign((var.value()*tau) + ((1-tau)*tfvars[ids+total_vars//2].value)))
+		for ids, var in enumerate(tfVars[0:total_vars//2]):
+			op_holder.append(tfVars[ids+total_vars//2].assign((var.value()*tau) + ((1-tau)*tfVars[ids+total_vars//2].value())))
 		return op_holder	
 
 	def updateTarget(self, op_holder):
@@ -104,29 +105,34 @@ class Trainer(object):
 			self.sess.run(op)
 
 	def close_sess(self):
-		self.ses.close()
+		self.sess.close()
 
 	def writeToFile(self, path, data):
+		#dir_path = os.path.dirname(os.path.realpath('NeuralNet.py'))
+		#path = dir_path +"\\" + path
+		#helper.check_dir(path)
 		f = open(path, 'a')
 		f.write(data)
 		f.close()
 		
 	def clearFile(self, path):
-		f = open(path, 'w')
+		#dir_path = os.path.dirname(os.path.realpath('NeuralNet.py'))
+		#path = dir_path +"\\" + path
+		#helper.check_dir(path)
+		f = open(path, 'w+')
 		f.write('')
 		f.close()
 
-	def init_episode(self, vec100, epnum, steps):
+	def init_episode(self, board, epnum, steps):
+		print("init_episode")
 		if epnum == 0:
 			self.init = tf.global_variables_initializer()
 			self.targetOps = self.updateTargetGraph(tf.trainable_variables(),self.tau)
 			self.myBuffer = experience_buffer()
 
-
-			#self.myBuffer = #NEED TO MAKE A BUFFER CLASS
 			#Setting the random action decrease
 			self.e = self.startE
-			self.stepDrop = (self.startE - self.endE)/self.annealing_steps
+			self.stepDrop = (self.startE - self.endE)/self.steps
 			self.jList = {}
 			self.rList = {}
 
@@ -137,23 +143,40 @@ class Trainer(object):
 			self.myBuffer.add(self.episodeBuffer.buffer)
 			self.jList.append(steps)
 			self.rList.append(self.rAll)
+		#List that has the total rewards/steps per episode
 		self.episodeBuffer = experience_buffer()
-		self.s = vec100 #The whole board
+		self.s = board #The whole board
 		return
+	
 	def get_moves(self, turn):
 		total_steps = turn
 		#Choose a greedy action with an e chance of randomness
 		if np.random.rand(1) < self.e or total_steps < self.pre_steps:
-			self.a1 = np.random.randint(0, 100) #100
+			pieces = self.s.getMoving()
+
+			
+			self.a1 = pieces[np.random.randint(0, len(pieces))]
+			print(self.a1)
+
+			#Where are we moving to??
+			#Use moveWhere function to get a list of possible places to move
+			
+			#Is it a 2?
+			#if self.s.
+			#What's the x and y of that place?
+			while self.a2 == self.a1:
+				self.a2 = np.random.randint(0,100)
 			self.place = np.random.rand(1,100)[0]
 		else:
 			self.a1 = self.sess.run(self.mainPN.predict,food_dict={self.mainPN.X:[self.s]})[0]
 			self.place = self.sess.run(self.mainPN.Qout,fend_dict={self.mainPN.X:[self.s]})[0]
 		return self.place
 
-	def trainReward(self, vec100, r, total_steps):
+	def trainReward(self, board, r, total_steps):
 		print("T steps: {} -- pt steps: {}".format(total_steps, self.pre_train_steps))
-		s1 = vec_100
+		s1 = board
+
+		#Saving experience to buffer
 		self.episodeBuffer.add(np.reshape(np.array([self.s, self.a1, self.a2, r, s1]), [1,6]))
 
 		if total+steps > self.pre_steps:
@@ -183,8 +206,8 @@ class Trainer(object):
 		self.rAll += r
 		self.s = s1
 
-	def first_game(self, vec100, r):
-		s1 = vec100
+	def first_game(self, board, r):
+		s1 = board
 		self.episodeBuffer.add(np.reshape(np.array([self.s, self.a1, self.a2, r, s1]),[1,5]))
 		self.rAll += r
 		self.s = s1

@@ -3,6 +3,7 @@ class StrategoBoard():
 	def __init__(self):
 		self.MapData = [[['','','']for i in range(10)] for j in range(10)]
 		self.setBoard()
+		#I may do something with this later. Idk
 		self.attack_threshold = 0.0
 		#Going to be tuples, first color, second piece
 	
@@ -32,7 +33,7 @@ class StrategoBoard():
 
 
 	#Reads in the board setup from a text file
-	def ReadBoard(self,text, side):
+	def ReadBoard(self, side, text):
 		#First, we organize the file
 		f = open(text)
 		lines = f.readlines()
@@ -50,15 +51,7 @@ class StrategoBoard():
 				for col in range(0, 10):
 					self.MapData[9-line][col] = (['Theirs', data[line][col], 'U'])
 
-	#Gets where your army is on the map
-	def getArmy(self):
-		mine  = []
-		for i in range(0, len(self.MapData)):
-			for j in range (0, len(self.MapData[i])):
-				if self.MapData[i][j][0] == 'Mine':
-					mine.append([i,j])
-		#Returns a list of locations for your pieces
-		return mine
+	
 
 	def getPiece(self, x, y):
 		return self.MapData[x][y][1]
@@ -73,6 +66,16 @@ class StrategoBoard():
 	def isThere(self,x,y):
 		if self.MapData[x][y] == ['','','']: return False
 		return True
+
+	#Returns a list of where a piece can move
+	def moveWhere(self, x, y):
+		print("PLACEHOLDER")
+		if canMove(x, y) == False:
+			return []
+		if self.getPiece(x, y) == '2':
+
+	#To make lists of stuff
+
 
 	def knownEnemy(self):
 		theirs = []
@@ -89,23 +92,51 @@ class StrategoBoard():
 				theirs.append([i, j])
 		return theirs
 
+	#Returns the full tuple behind the list
 	def getFull(self, x, y):
 		return self.MapData[x][y]
 
-	def createTensor(self):
-		inputTensor = [0 for i in range(0, 10) for j in range(0, 10)]
+	#Gets where your army is on the map
+	def getArmy(self):
+		mine  = []
+		for i in range(0, len(self.MapData)):
+			for j in range (0, len(self.MapData[i])):
+				if self.MapData[i][j][0] == 'Mine':
+					mine.append([i,j])
+		#Returns a list of locations for your pieces
+		return mine
 
-		for x in range(0, 10):
-			for y in range(0, 10):
-				inputTensor[(10 * x) + y] = self.board.getFull(x,y)
+	#Returns if a piece can move or not
+	def canMove(self, x, y):
+		if self.getPiece(x, y) == 'B':
+			return False
+		#Four directions. It doesn't matter if it's a 2 or not. If it's blocked in, it's blocked in
+		possibleMoves = [[x+1, y], [x, y+1], [x-1, y], [x, y-1]]
+		for i in possibleMoves:
+			if i[0] >= 0 and i[0] < 10 and i[1] >= 0 and i[1] < 10:
+				if self.isThere(i[0], i[1]) == False:
+					return True
+				if self.getColor(i[0], i[1]) != 'L' and self.getColor(i[0], i[1]) != self.getColor(x, y):
+					return True
+		return False
 
-	def printTensor(self, data):
+	#Returns all pieces in your army that can move
+	def getMoving(self):
+		army = self.getArmy()
+		moving = []
+		for i in army:
+			if self.canMove(i[0], i[1]):
+				moving.append(i)
+		return moving
+
+	def printTensor(self):
 		output = ""
-		for i in range(len(data)):
-			output += str(data[i]) + "":
-			if (i+1)%10==0:
-				output += '\n'
+		for i in range(0, 10):
+			for j in range(0, 10):
+				output += str(self.getPiece(i, j))+","+str(self.getColor(i,j))+" "
+			output += '\n'
 		return output
+
 
 
 			

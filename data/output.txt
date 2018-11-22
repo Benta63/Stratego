@@ -1,0 +1,52 @@
+Games Played: 0
+Tensod Data
+2,Mine 3,Mine B,Mine 2,Mine 3,Mine B,Mine F,Mine B,Mine 3,Mine 3,Mine 
+4,Mine B,Mine 4,Mine 7,Mine 8,Mine 5,Mine B,Mine 5,Mine 6,Mine 4,Mine 
+5,Mine 4,Mine B,Mine S,Mine 9,Mine 2,Mine 7,Mine 7,Mine 8,Mine 2,Mine 
+6,Mine 2,Mine 2,Mine 5,Mine 2,Mine 6,Mine 3,Mine 10,Mine 2,Mine 6,Mine 
+, , L,L L,L , , L,L L,L , , 
+, , L,L L,L , , L,L L,L , , 
+2,Theirs 6,Theirs 5,Theirs 9,Theirs 2,Theirs 6,Theirs 2,Theirs 10,Theirs 6,Theirs 2,Theirs 
+7,Theirs 2,Theirs B,Theirs S,Theirs 8,Theirs 4,Theirs 2,Theirs 7,Theirs 8,Theirs 4,Theirs 
+5,Theirs 4,Theirs B,Theirs 2,Theirs 7,Theirs 3,Theirs 5,Theirs 6,Theirs 5,Theirs B,Theirs 
+3,Theirs B,Theirs 4,Theirs 2,Theirs 3,Theirs B,Theirs 3,Theirs 3,Theirs B,Theirs F,Theirs 
+
+Games Played: 0
+Tensod Data
+2,Mine 3,Mine B,Mine 2,Mine 3,Mine B,Mine F,Mine B,Mine 3,Mine 3,Mine 
+4,Mine B,Mine 4,Mine 7,Mine 8,Mine 5,Mine B,Mine 5,Mine 6,Mine 4,Mine 
+5,Mine 4,Mine B,Mine S,Mine 9,Mine 2,Mine 7,Mine 7,Mine 8,Mine 2,Mine 
+6,Mine 2,Mine 2,Mine 5,Mine 2,Mine 6,Mine 3,Mine 10,Mine 2,Mine 6,Mine 
+, , L,L L,L , , L,L L,L , , 
+, , L,L L,L , , L,L L,L , , 
+2,Theirs 6,Theirs 5,Theirs 9,Theirs 2,Theirs 6,Theirs 2,Theirs 10,Theirs 6,Theirs 2,Theirs 
+7,Theirs 2,Theirs B,Theirs S,Theirs 8,Theirs 4,Theirs 2,Theirs 7,Theirs 8,Theirs 4,Theirs 
+5,Theirs 4,Theirs B,Theirs 2,Theirs 7,Theirs 3,Theirs 5,Theirs 6,Theirs 5,Theirs B,Theirs 
+3,Theirs B,Theirs 4,Theirs 2,Theirs 3,Theirs B,Theirs 3,Theirs 3,Theirs B,Theirs F,Theirs 
+
+Games Played: 0
+Tensod Data
+2,Mine 3,Mine B,Mine 2,Mine 3,Mine B,Mine F,Mine B,Mine 3,Mine 3,Mine 
+4,Mine B,Mine 4,Mine 7,Mine 8,Mine 5,Mine B,Mine 5,Mine 6,Mine 4,Mine 
+5,Mine 4,Mine B,Mine S,Mine 9,Mine 2,Mine 7,Mine 7,Mine 8,Mine 2,Mine 
+6,Mine 2,Mine 2,Mine 5,Mine 2,Mine 6,Mine 3,Mine 10,Mine 2,Mine 6,Mine 
+, , L,L L,L , , L,L L,L , , 
+, , L,L L,L , , L,L L,L , , 
+2,Theirs 6,Theirs 5,Theirs 9,Theirs 2,Theirs 6,Theirs 2,Theirs 10,Theirs 6,Theirs 2,Theirs 
+7,Theirs 2,Theirs B,Theirs S,Theirs 8,Theirs 4,Theirs 2,Theirs 7,Theirs 8,Theirs 4,Theirs 
+5,Theirs 4,Theirs B,Theirs 2,Theirs 7,Theirs 3,Theirs 5,Theirs 6,Theirs 5,Theirs B,Theirs 
+3,Theirs B,Theirs 4,Theirs 2,Theirs 3,Theirs B,Theirs 3,Theirs 3,Theirs B,Theirs F,Theirs 
+
+Games Played: 0
+Tensod Data
+2,Mine 3,Mine B,Mine 2,Mine 3,Mine B,Mine F,Mine B,Mine 3,Mine 3,Mine 
+4,Mine B,Mine 4,Mine 7,Mine 8,Mine 5,Mine B,Mine 5,Mine 6,Mine 4,Mine 
+5,Mine 4,Mine B,Mine S,Mine 9,Mine 2,Mine 7,Mine 7,Mine 8,Mine 2,Mine 
+6,Mine 2,Mine 2,Mine 5,Mine 2,Mine 6,Mine 3,Mine 10,Mine 2,Mine 6,Mine 
+, , L,L L,L , , L,L L,L , , 
+, , L,L L,L , , L,L L,L , , 
+2,Theirs 6,Theirs 5,Theirs 9,Theirs 2,Theirs 6,Theirs 2,Theirs 10,Theirs 6,Theirs 2,Theirs 
+7,Theirs 2,Theirs B,Theirs S,Theirs 8,Theirs 4,Theirs 2,Theirs 7,Theirs 8,Theirs 4,Theirs 
+5,Theirs 4,Theirs B,Theirs 2,Theirs 7,Theirs 3,Theirs 5,Theirs 6,Theirs 5,Theirs B,Theirs 
+3,Theirs B,Theirs 4,Theirs 2,Theirs 3,Theirs B,Theirs 3,Theirs 3,Theirs B,Theirs F,Theirs 
+
