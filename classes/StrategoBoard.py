@@ -67,13 +67,6 @@ class StrategoBoard():
 		if self.MapData[x][y] == ['','','']: return False
 		return True
 
-	#Returns a list of where a piece can move
-	def moveWhere(self, x, y):
-		print("PLACEHOLDER")
-		if canMove(x, y) == False:
-			return []
-		if self.getPiece(x, y) == '2':
-
 	#To make lists of stuff
 
 
@@ -110,6 +103,8 @@ class StrategoBoard():
 	def canMove(self, x, y):
 		if self.getPiece(x, y) == 'B':
 			return False
+		if self.getPiece(x, y) == 'F':
+			return False
 		#Four directions. It doesn't matter if it's a 2 or not. If it's blocked in, it's blocked in
 		possibleMoves = [[x+1, y], [x, y+1], [x-1, y], [x, y-1]]
 		for i in possibleMoves:
@@ -128,6 +123,25 @@ class StrategoBoard():
 			if self.canMove(i[0], i[1]):
 				moving.append(i)
 		return moving
+
+	#Returns a list of where a piece can move
+	def moveWhere(self, x, y):
+		print("PLACEHOLDER")
+		if canMove(x, y) == False:
+			return []
+		if self.getPiece(x, y) == '2':
+			possibleMoves = [[i, y] for i in range(0, 10)]
+			possibleMoves += [[x, i] for i in range(0, 10)]
+			for move in possibleMoves:
+				if self.getColor(move[0], move[1]) != self.getColor(x, y) and self.getColor(move[0], move[1]) != 'L':
+					possibleMoves.remove(move)
+			return possibleMoves
+		else:
+			possibleMoves = [[x+1, y], [x, y+1], [x-1, y], [x, y-1]]
+			for move in possibleMoves:
+				if self.getColor(move[0], move[1]) != self.getColor(x, y) and self.getColor(move[0], move[1]) != 'L':
+					possibleMoves.remove(move)
+			return possibleMoves
 
 	def printTensor(self):
 		output = ""

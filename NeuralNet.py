@@ -155,17 +155,17 @@ class Trainer(object):
 			pieces = self.s.getMoving()
 
 			
-			self.a1 = pieces[np.random.randint(0, len(pieces))]
+			self.a1 = np.random.randint(0, len(pieces))
 			print(self.a1)
 
 			#Where are we moving to??
 			#Use moveWhere function to get a list of possible places to move
-			
+			moves = self.s.moveWhere(pieces[self.a1][0], pieces[self.a1][1])
+
 			#Is it a 2?
 			#if self.s.
 			#What's the x and y of that place?
-			while self.a2 == self.a1:
-				self.a2 = np.random.randint(0,100)
+			print (np.random.rand(1, 100))
 			self.place = np.random.rand(1,100)[0]
 		else:
 			self.a1 = self.sess.run(self.mainPN.predict,food_dict={self.mainPN.X:[self.s]})[0]
