@@ -29,30 +29,43 @@ class PlaceManager(object):
 		#A two can't move through pieces if it is moving multiple spaces
 		if piece == '2':
 			if abs(xstart-xend) > 0:
+				way = 'up'
+				if (xend < xstart): way = 'down'
+				print(way)
 				#We go through this row
-				i = xstart + 1
-				#+1 because we don't want to run into ourselves
+				if way == 'up':	i = xstart + 1
+				else: i = xstart - 1
+				#+1/-1 because we don't want to run into ourselves
 				while i != xend:
-					i = i + 1
-					if board.getPiece(i, ystart) != '':
+					print(i)
+					if board.getPiece(i, ystart) != 'N':
+						print(board.MapData[i][ystart])
 						return False
+					if way == 'up': i = i + 1
+					else: i = i - 1
 
 			elif abs (ystart-yend) > 0:
-				i = ystart + 1
+				way = 'up'
+				if (yend < ystart): way = 'down'
+				if way == 'up': i = ystart + 1
+				else: i = xstart - 1
 				while i != yend:
-					i = i + 1
-					if board.getPiece(i, xstart) != '':
+					print(i)
+					if board.getPiece(i, xstart) != 'N':
+						print(board.MapData[xstart][i])
+
 						return False
+					if way == 'up': i = i + 1
+					else: i = i - 1
 		
-		##ADD MORE ILLEGAL MOVES HERE
-							
+		##ADD MORE ILLEGAL MOVES HERE				
 		return True
 
 	#An error function for debugging
 	def ErrorFunction(type):
 		print("Error: {:s}".format(type))
 		#Taking out exit for testing purposes
-		#sys.exit()
+		sys.exit()
 	
 	#For initial placing of troops on the board	
 	def placeTroop(board, troop, x,y):
@@ -77,18 +90,23 @@ class PlaceManager(object):
 		elif Attacker == 'S' and Defender == '10':
 			return True
 		else:
+			print(Attacker, Defender)
 			return (int(Attacker) > int(Defender))
 			
 
 	def updateBoard(xstart, ystart, xend, yend, board):
+		print(xstart, ystart, xend, yend)
 		if not PlaceManager.islegal(xstart, ystart, xend, yend, board):
+			print("The piece was: "+ str(board.getPiece(xstart, ystart)) + "\n")
 			#This move is illegal, try something else
+			print("Moving to: "+ str(board.getColor(xend, yend)) + "\n")
+
 			PlaceManager.ErrorFunction("Illegal Move")
 			return False
 
-		if board.MapData[xend][yend] != ['','','']:
+		if board.MapData[xend][yend] == ['N','N','N']:
 			#The location is empty, so we place the piece
-			board.MapData[xend][yend] = [color,board.getPiece(xstart,ystart), "K"]
+			board.MapData[xend][yend] = [board.getColor(xstart, ystart),board.getPiece(xstart,ystart), "K"]
 		
 		else:
 			#It's an attack
@@ -100,15 +118,16 @@ class PlaceManager(object):
 				#Exit
 			#We will handle edge cases like equivalent pieces here as then they are both removed
 			elif board.getPiece(xstart,ystart) == board.getPiece(xend,yend):
-				board.MapData[yend][xend] = ['','','']
+
+				board.MapData[xend][yend] = ['N','N','N']
 
 			elif PlaceManager.Attack(board.getPiece(xstart,ystart), board.getPiece(ystart,yend)):
 				#Won the attack
 				board.MapData[xend][yend] = [board.getColor(xstart,ystart),board.getPiece(xstart,ystart), 'M']
 			else:
 				#Lost the attack, but we know the piece
-				board.MapData[xend][yend] = [board.Color(xstart,ystart),board.Piece(xstart,ystart),'K']
+				board.MapData[xend][yend] = [board.getColor(xstart,ystart),board.getPiece(xstart,ystart),'K']
 	
 		#Whether the piece moving lives or dies, the place it came from will still be empty
-		board.MapData[xstart][ystart] = ['','','']
+		board.MapData[xstart][ystart] = ['N','N','N']
 		return True

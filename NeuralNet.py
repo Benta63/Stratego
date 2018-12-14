@@ -37,8 +37,7 @@ class PlaceNetwork(object):
 		self.salience = tf.gradients(self.Advantage, self.X)
 
 		self.Qout = self.Value + tf.subtract(self.Advantage, tf.reduce_mean(self.Advantage, axis=1, keepdims=True))
-		self.predict = tf.argmax(self.Qout, 1)
-
+		self.predictPiece = tf.argmax(self.Qout, 1)
 		#Getting the loss by getting the difference in squares between the target and the predicted Qs
 		self.targetQ = tf.placeholder(shape=[None], dtype=tf.float32)
 		self.actions = tf.placeholder(shape=[None], dtype=tf.int32)
@@ -80,8 +79,10 @@ class Trainer(object):
 		self.loadModel = False #Should we load a saved model?
 		self.timePerStep = 1 #Length of each step used
 		self.load_model = False
+		self.rAll = 0.0
 
 		self.tau = 0.001
+		self.myBuffer = experience_buffer()
 
 		tf.reset_default_graph()
 
@@ -124,11 +125,9 @@ class Trainer(object):
 		f.close()
 
 	def init_episode(self, board, epnum, steps):
-		print("init_episode")
 		if epnum == 0:
 			self.init = tf.global_variables_initializer()
 			self.targetOps = self.updateTargetGraph(tf.trainable_variables(),self.tau)
-			self.myBuffer = experience_buffer()
 
 			#Setting the random action decrease
 			self.e = self.startE
@@ -140,6 +139,7 @@ class Trainer(object):
 			self.sess.run(self.init)
 		else: #The end of an episode update
 			#self.writeToFile(self.rewardPath, '{}|{}|{}|{}\n'.format(self.))
+			
 			self.myBuffer.add(self.episodeBuffer.buffer)
 			self.jList.append(steps)
 			self.rList.append(self.rAll)
@@ -148,29 +148,30 @@ class Trainer(object):
 		self.s = board #The whole board
 		return
 	
-	def get_moves(self, turn):
+	def get_moves(self, turn, side):
 		total_steps = turn
 		#Choose a greedy action with an e chance of randomness
 		if np.random.rand(1) < self.e or total_steps < self.pre_steps:
-			pieces = self.s.getMoving()
-
-			
+			pieces = self.s.getMoving(side)
+			print("Pieces: " + str(pieces)+ "\n")
+			print("Which side: " + str(side) + "\n")
 			self.a1 = np.random.randint(0, len(pieces))
-			print(self.a1)
 
 			#Where are we moving to??
 			#Use moveWhere function to get a list of possible places to move
+			#print(pieces[self.a1][0], pieces[self.a1][1])
 			moves = self.s.moveWhere(pieces[self.a1][0], pieces[self.a1][1])
 
-			#Is it a 2?
-			#if self.s.
 			#What's the x and y of that place?
 			print (np.random.rand(1, 100))
-			self.place = np.random.rand(1,100)[0]
+			#If their's one possible move, we have to pick that one
+			if len(moves) > 1: self.place = np.random.randint(0, len(moves))
+			else: self.place = 0
+			print("Printing place")
 		else:
-			self.a1 = self.sess.run(self.mainPN.predict,food_dict={self.mainPN.X:[self.s]})[0]
+			self.a1 = self.sess.run(self.mainPN.predictPiece,food_dict={self.mainPN.X:[self.s]})[0]
 			self.place = self.sess.run(self.mainPN.Qout,fend_dict={self.mainPN.X:[self.s]})[0]
-		return self.place
+		return self.a1, self.place
 
 	def trainReward(self, board, r, total_steps):
 		print("T steps: {} -- pt steps: {}".format(total_steps, self.pre_train_steps))
@@ -208,7 +209,8 @@ class Trainer(object):
 
 	def first_game(self, board, r):
 		s1 = board
-		self.episodeBuffer.add(np.reshape(np.array([self.s, self.a1, self.a2, r, s1]),[1,5]))
+		self.episodeBuffer.add(np.reshape(np.array([self.s, self.a1, self.place, r, s1]),[1,5]))
+		print(self.rAll, r)
 		self.rAll += r
 		self.s = s1
 

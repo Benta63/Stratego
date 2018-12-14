@@ -80,7 +80,7 @@ class Bot(object):
 
 
 class Random(object):
-
+	
 	#Just in case I need a random class
 
 	@staticmethod
