@@ -1,6 +1,8 @@
 import numpy as np
+import sys
 import random
 import tensorflow as tf
+from tensorflow.python.saved_model import tag_constants
 import scipy.misc
 import os
 from classes import helper
@@ -9,6 +11,7 @@ import itertools
 from classes import StrategoBoard
 from classes import ActionManager
 from classes.ActionManager import PlaceManager
+
 
 #So the CPU extensions don't get in the way
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
@@ -47,9 +50,12 @@ class PlaceNetwork(object):
 
 		self.td_error = tf.square(self.targetQ - self.Q)
 		self.loss = tf.reduce_mean(self.td_error)
-		self.trainer = tf.train.AdamOptimizer(learning_rate= 0.00001)
+		self.trainer = tf.train.AdamOptimizer(learning_rate= 0.0001)
 		self.updateModel = self.trainer.minimize(self.loss)
+		
 
+		#print(tf.build_graph(self.X, self.B1, self.B2A, self.W2A, self.B2V, self.W2V, self.AW, self.VW, self.targetQ, self.actions))
+		#sys.exit()
 #For now placing troops is known, but may want to add a placing network later.
 
 class experience_buffer(object):
@@ -69,7 +75,7 @@ class Trainer(object):
 	def __init__(self):
 		#Setting training parameters
 		self.batch_size = 4 #Number of experience traces per training step
-		self.updaes = 5 #How often to perform a training set
+		self.updates = 5 #How often to perform a training set
 		self.path = "./Models" #Where the saved models are
 		self.num_episodes = 5 #How many game environments to train with
 		self.pre_steps = 50 #Number of random actions before training begins
@@ -93,7 +99,13 @@ class Trainer(object):
 		self.clearFile(self.rewardPath)
 		self.mainPN = PlaceNetwork()
 		self.targetPN = PlaceNetwork()
-	 	
+
+		self.init = tf.global_variables_initializer()
+		self.sess = tf.Session()
+		self.sess.run(self.init)
+
+
+
 	def updateTargetGraph(self, tfVars, tau):
 		total_vars = len(tfVars)
 		op_holder = []
@@ -126,17 +138,16 @@ class Trainer(object):
 
 	def init_episode(self, board, epnum, steps):
 		if epnum == 0:
-			self.init = tf.global_variables_initializer()
 			self.targetOps = self.updateTargetGraph(tf.trainable_variables(),self.tau)
 
 			#Setting the random action decrease
 			self.e = self.startE
 			self.stepDrop = (self.startE - self.endE)/self.steps
-			self.jList = {}
-			self.rList = {}
+			self.jList = []
+			self.rList = []
 
-			self.sess = tf.Session()
-			self.sess.run(self.init)
+			
+
 		else: #The end of an episode update
 			#self.writeToFile(self.rewardPath, '{}|{}|{}|{}\n'.format(self.))
 			
@@ -174,13 +185,13 @@ class Trainer(object):
 		return self.a1, self.place
 
 	def trainReward(self, board, r, total_steps):
-		print("T steps: {} -- pt steps: {}".format(total_steps, self.pre_train_steps))
+		print("T steps: {} -- pt steps: {}".format(total_steps, self.pre_steps))
 		s1 = board
 
 		#Saving experience to buffer
-		self.episodeBuffer.add(np.reshape(np.array([self.s, self.a1, self.a2, r, s1]), [1,6]))
+		self.episodeBuffer.add(np.reshape(np.array([self.s, self.a1, self.place, r, s1]), [1,5]))
 
-		if total+steps > self.pre_steps:
+		if total_steps > self.pre_steps:
 			if self.e > self.endE:
 				self.e -= self.stepDrop
 
@@ -213,4 +224,48 @@ class Trainer(object):
 		print(self.rAll, r)
 		self.rAll += r
 		self.s = s1
+
+	def saveTensor(self):
+		saver = tf.train.Saver()
+		#self.sess.run(self.init)
+		print(self.sess)
+		saveTo = saver.save(self.sess, self.path)
+
+		return saveTo
+		#For the Main NN
+		'''graph1 = tf.Graph()
+		with graph1.as_default():
+			#Idk why this is neccesary
+			tf.set_random_seed(34)
+			#Datasets
+			dataset = tf.data.Dataset.from_tensor_slices((self.mainPN.X, self.mainPN.targetQ, self.mainPN.actions))
+
+
+			with tf.Session() as sess:
+				...
+				inputs = {
+				"Main_X_placeholder": self.mainPN.X,
+				"Opponent_X_placeholder": self.targetPN.X,
+				"Main_TargetQ_placeholder": self.mainPN.targetQ,
+				"Opponent_TargetQ_placeholder": self.targetPN.targetQ,
+				"Main_Actions_placeholder": self.mainPN.actions,
+				"Opponent_Actions_placeholder": self.targetPN.actions
+				}
+				outputs = {"buffer": self.myBuffer}
+				tf.saved_model.simple_save(sess, self.path, inputs, outputs)
+				'''
+
+
+	def restoreTensor(self):
+		with restored_graph.as_default():
+			with tf.Session() as sess:
+				tf.saved_model.loader.load(sess, [tag_constants.SERVING]
+					, self.path)
+				self.mainPN.X = graph.get_tensor_by_name("Main_X_placeholder")
+				self.targetPN.X = graph.get_tensor_by_name("Opponent_X_placeholder")
+				self.mainPN.targetQ = graph.get_tensor_by_name("Main_TargetQ_placeholder")
+				self.targetPN.targetQ = get_tensor_by_name("Opponent_TargetQ_placeholder")
+				self.mainPN.actions = graph.get_tensor_by_name("Main_Actions_placeholder")
+				self.targetPN.actions = graph.get_tensor_by_name("Opponent_Actions_placeholder")
+	
 

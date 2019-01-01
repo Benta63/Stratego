@@ -49,7 +49,13 @@ class StrategoBoard():
 			#So, 0 is 9, 1 is 8, 3 is 7
 			for line in range(0, len(data)):
 				for col in range(0, 10):
-					self.MapData[9-line][col] = (['Theirs', data[line][col], 'U'])
+					#For testing purposes
+					if data[line][col] == 'N':
+						self.MapData[9-line][col] = (['N', data[line][col], 'N'])
+					#Remove the above two lines. Unnecesary. 
+					else:
+						self.MapData[9-line][col] = (['Theirs', data[line][col], 'U'])
+
 
 	
 
@@ -157,37 +163,49 @@ class StrategoBoard():
 								continue
 
 							possibleMoves.append([i,y])
-				elif player == 'Mine' and (self.getColor(x+1, y) == 'Theirs' or self.getColor(x+1, y) == 'N'): 
+				elif player == 'Mine': 
 					self.getColor(x+1, y)
 					too_far = False
 					for i in range(x+1, 10):
-						if self.getColor(i, y) != 'Mine' and self.getColor(i,y) != 'L':
-							if self.getColor(i-1, y) == 'Theirs':
-								too_far = True
-							if(too_far):
-								continue
-							possibleMoves.append([i,y])				
+						print(i)
+						if self.getColor(i, y) == 'Mine':
+							break
+						if self.getColor(i,y) == 'L':
+							break
+						if self.getColor(i, y) == 'Theirs':
+							print(i, y)
+							print("Break Theirs")
+							possibleMoves.append([i, y])
+							break
+						print(self.getPiece(i, y))
+						possibleMoves.append([i,y])				
 
 			if x > 0:
 				print('if 2 (2)\n')
 				if player == 'Theirs' and (self.getColor(x-1, y) =='Mine' or self.getColor(x-1, y) == 'N'):
 					too_far = False
-					for i in range(1, x-1):
+					for i in range(x-1, -1, -1):
 						if self.getColor(i, y) != 'Theirs' and self.getColor(i,y) != 'L':
 							if self.getColor(i+1, y) == 'Mine':
 								too_far = True
 							if(too_far):
 								continue
 							possibleMoves.append([i,y])
-				elif player == 'Mine' and (self.getColor(x-1, y) == 'Theirs' or self.getColor(x-1, y) == 'N'):
-					too_far = False
-					for i in range(1, x-1):
-						if self.getColor(i, y) != 'Mine' and self.getColor(i,y) != 'L':
-							if self.getColor(i+1, y) == 'Theirs':
-								too_far = True
-							if(too_far):
-								continue
-							possibleMoves.append([i,y])
+				elif player == 'Mine':
+					print(player)
+					for i in range(x-1, -1, -1):
+						print(i)
+						if self.getColor(i, y) == 'Mine':
+							break
+						if self.getColor(i,y) == 'L':
+							break
+						if self.getColor(i, y) == 'Theirs':
+							print(i, y)
+							print("Break Theirs")
+							possibleMoves.append([i, y])
+							break
+						print(self.getPiece(i, y))
+						possibleMoves.append([i,y])
 			if y < 9:
 				print('if 3 (2)\n')
 				if player == 'Theirs' and (self.getColor(x, y+1) =='Mine' or self.getColor(x, y+1) == 'N'):
@@ -200,35 +218,41 @@ class StrategoBoard():
 								continue
 							possibleMoves.append([x, i])
 
-				elif player == 'Mine' and (self.getColor(x, y+1) == 'Theirs' or self.getColor(x, y+1) == 'N'):
-					too_far = False
+				elif player == 'Mine':
 					for i in range(y+1, 10):
-						if self.getColor(x, i) != 'Mine' and self.getColor(x,i) != 'L':
-							if self.getColor(x, i-1) == 'Mine':
-								too_far = True
-							if(too_far):
-								continue
+						if self.getColor(x, i) == 'Mine':
+							break
+						if self.getColor(x,i) == 'L':
+							break
+						if self.getColor(x, i) == 'Theirs':
 							possibleMoves.append([x, i])
+							break
+						possibleMoves.append([x,i])
 			if y > 0:
 				print('if 4 (2)\n')
 				if player == 'Theirs' and (self.getColor(x, y-1) =='Mine' or self.getColor(x, y-1) == 'N'):
 					too_far = False
-					for i in range(0, y-1):
-						if self.getColor(x, i) != 'Mine' and self.getColor(x,i) != 'L':
-							if self.getColor(x, i+1) != 'Mine':
-								too_far = True
-							if(too_far):
-								continue
-							possibleMoves.append([x, i])
+					for i in range(y-1, -1, -1):
+						print(i)
+						if self.getColor(x, i) == 'Theirs':
+							break
+						if self.getColor(x,i) == 'L':
+							break
+						if self.getColor(x, i+1) == 'Theirs':
+							possibleMoves.append([x,i])
+						possibleMoves.append([x,i])
 				if player == 'Mine' and (self.getColor(x, y-1) == 'Theirs' or self.getColor(x, y-1) == 'N'):
 					print(self.getColor(x, y-1))
-					for i in range(0, y-1):
-						if self.getColor(x, i) != 'Mine' and self.getColor(x,i) != 'L':
-							if self.getColor(x, i+1):
-								too_far = True
-							if(too_far):
-								continue
+					too_far = False
+					for i in range(y-1, -1, -1):
+						if self.getColor(x, i) == 'Mine':
+							break
+						if self.getColor(x,i) == 'L':
+							break
+						if self.getColor(x, i) == 'Theirs':
 							possibleMoves.append([x, i])
+							break
+						possibleMoves.append([x,i])
 
 		else:
 			print(x, y)

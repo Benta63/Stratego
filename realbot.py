@@ -1,3 +1,4 @@
+import sys
 from sys import stderr, stdin, stdout
 from classes import StrategoBoard
 from classes import ActionManager
@@ -10,6 +11,10 @@ import numpy as np
 import _thread
 import NeuralNet
 import os
+import io
+from io import StringIO
+
+#IF YOU CAN'T MOVE ANY PIECES, ITS ALSO A DRAW
 #Do stuff with neural net
 
 class Bot(object):
@@ -26,11 +31,13 @@ class Bot(object):
 		self.turn = 0
 		self.data = 'data\\output.txt'
 		self.reward_place = 'data\\rewards.txt'
-
+		self.reward = 0
+		self.opponent_reward = 0
 		self.side = ''
 		self.Trainer = NeuralNet.Trainer() #Neural net shit
+		self.OpponentTrainer = NeuralNet.Trainer()
 
-		self.numGames = 100
+		self.numGames = 2
 
 
 
@@ -38,6 +45,11 @@ class Bot(object):
 		print ("Game Over")
 		self.newGame = True
 		self.gamesPlayed += 1
+
+	def onSessionEnd(self):
+		print("Done")
+		self.Trainer.saveTensor()
+		self.OpponentTrainer.saveTensor()
 
 	def compute_reward(self):
 
@@ -81,128 +93,135 @@ class Bot(object):
 			return delta_amount + (delta_pieces_known * 2.1)
 		return 0
 
-	def readStdin(self):
-		self.run()
-		stdin.write('setup_map BoardSetup1 BoardSetup2o')
-		stdin.flush()
-		# line = stdin.readline()
-		# while line:
-		# 	readline = stdin.readline()
-		# 	self.run()
-		# 	for line in self.readStdin():
-		# 		line = line.split()
-		# 		stdout(line)
-		# 		stdout.flush()
+	# def readStdin(self):
+	# 	#self.run()
+	# 	stdin.write('setup_map BoardSetup1 BoardSetup2o')
+	# 	stdin.flush()
+	# 	line = stdin.readline()
+	# 	while line:
+	# 		readline = stdin.readline()
+	# 		self.run()
+	# 		for line in self.readStdin():
+	# 			line = line.split()
+	# 			stdout(line)
+	# 			stdout.flush()
 
 	def run(self):
 		#print("Running")
 		
 
-		#print ("Start of while")
+		print ("Start of while")
+		while not sys.stdin.closed:
+			if self.gamesPlayed > self.numGames:
+				self.onSessionEnd()
+				sys.exit()
+			try:
+				rawline = sys.stdin.readline()
+				#End of file
+				if len(rawline) == 0:
+					return
 
-		try:
-			#while(self.readStdin()):
-			rawline = stdin.readline()
-			#End of file
-			if len(rawline) == 0:
-				return
+				line = rawline.strip()
 
-			line = rawline.strip()
+				if len(line) == 0:
+					return
 
-			if len(line) == 0:
-				return
+				parts = line.split()
+				command = parts[0]
 
-			parts = line.split()
-			command = parts[0]
+				if command == 'setup_map':
+					self.setup_map(parts[1:])
+				elif command == 'go':
+					if self.board.DidWin() == True:
+						winner = self.board.WhoWon()
+						self.gamesPlayed += 1
+						self.turn = 0
+						output = "The Winner is: {}\n".format(winner)
+						sys.stdout.write(output)
+						sys.stdout.flush()
+						f = open(self.data, 'a+')
+						f.write(output)
+						f.close()
 
-			if command == 'setup_map':
-				self.setup_map(parts[1:])
-			elif command == 'go':
-				if self.board.DidWin() == True:
-					winner = self.board.WhoWon()
-					self.gamesPlayed += 1
-					self.turn = 0
-					output = "The Winner is: {}\n".format(winner)
-					stdout.write(output)
-					stdout.flush()
-					f = open(self.data, 'a+')
-					f.write(output)
+
+
+					print("Turn: {} | Games Played: {}\n".format(math.ceil(self.turn), self.gamesPlayed))
+
+					if self.turn == 0:
+						self.Trainer.init_episode(self.board, self.gamesPlayed, self.turn)
+						self.turn += 1
+					elif self.turn != 0:
+						self.turn += 1
+					#Something over here????
+					self.side = 'Mine' #In the opponent it will be 'Theirs'
+					moves = self.Trainer.get_moves(self.turn, self.side)
+					print("Moves: " + str(moves))
+					self.side = 'Theirs'
+					xBegin, yBegin = self.board.getMoving('Mine')[moves[0]]
+					print("befor ")
+					print("Moves: " + str(self.board.moveWhere(xBegin, yBegin)))
+					print("end: "+ str(self.board.moveWhere(xBegin, yBegin)[moves[1]]))
+
+					xend, yend = self.board.moveWhere(xBegin, yBegin)[moves[1]]
+					print("Move Where?")
+
+					#print (xBegin, yBegin, xend, yend)
+					updatelst = [xBegin, yBegin, xend, yend]
+					#a1 is in the getMoving array and the second is in the get
+					print("Update: " + str(updatelst))
+					output = self.update_map(updatelst)
+					#stdout.write(output)
+					#stdout.flush()
+					
+					self.reward = self.compute_reward()
+					rewards = np.array([self.reward])
+					print(rewards)
+					if self.gamesPlayed == 0:
+						self.Trainer.first_game(self.board, rewards)
+					else:
+						self.Trainer.trainReward(self.board, rewards, self.turn)
+					f = open(self.reward_place, 'a+')
+					sys.stdout.write("Reward: " + str(self.reward) + "\n")
+					write_str = str(self.reward)
+					f.write(write_str)
 					f.close()
-
-
-
-				print("Turn: {} | Games Played: {}\n".format(math.ceil(self.turn), self.gamesPlayed))
-
-				if self.turn == 0:
-					self.Trainer.init_episode(self.board, self.gamesPlayed, self.turn)
-					self.turn += 1
-				elif self.turn != 0:
-					self.turn += 1
-				#Something over here????
-				self.side = 'Mine' #In the opponent it will be 'Theirs'
-				moves = self.Trainer.get_moves(self.turn, self.side)
-				print("Moves: " + str(moves))
-				self.side = 'Theirs'
-				xBegin, yBegin = self.board.getMoving('Mine')[moves[0]]
-				print("befor ")
-				print("end: "+ str(self.board.moveWhere(xBegin, yBegin)[moves[1]]))
-
-				xend, yend = self.board.moveWhere(xBegin, yBegin)[moves[1]]
-				print("Move Where?")
-
-				#print (xBegin, yBegin, xend, yend)
-				updatelst = [xBegin, yBegin, xend, yend]
-				#a1 is in the getMoving array and the second is in the get
-				print("Update: " + str(updatelst))
-				output = self.update_map(updatelst)
-				#stdout.write(output)
-				#stdout.flush()
-				
-				self.reward = self.compute_reward()
-				rewards = np.array([self.reward])
-				print(rewards)
-				if self.gamesPlayed == 0:
-					self.Trainer.first_game(self.board, rewards)
-				else:
-					self.Trainer.trainReward(self.board, rewards, self.turn)
-				f = open(self.reward_place, 'a+')
-				stdin("Reward: " + str(self.reward) + "\n")
-	
-				f.write(write_str)
-				f.close()
-				f.open(self.output, 'a+')
-				f.write(str(self.board.printTensor())+"\n")
-				f.close()
-				print("Open and closed \n")
-				stdin.flush()
-				write_str = str(self.reward)
-
-				
-				if self.gamesPlayed < self.numGames: 
-					stdout.write('opponent_moves')
-					stdout.flush()
-
-
-				elif command == 'opponent_moves':
-					#Train the fight network
+					f = open(self.data, 'a+')
+					f.write(str(self.board.printTensor())+"\n")
+					f.close()
+					sys.stdin.flush()
 					
-					stdout.write('go')
-					stdout.flush()
 
-
-				elif command == "Game_Over":
-					self.OnGameEnd()
 					
-				stdin.write('go')
-				stdin.flush()
-				# else:
-				# 	stderr.write('Unknown command: %s\n' % (command))
-				# 	stderr.flush()
+					if self.gamesPlayed < self.numGames: 
+						sys.stdout.write('opponent_moves')
+						sys.stdout.flush()
 
 
-		except EOFError:
-			print("EOFError")
-			return
+					if command == 'opponent_moves':
+						#Train the fight network
+						
+						oldstdin = stdin
+						sys.stdin = io.StringIO('go')
+						sys.stdin.flush()
+						#print (raw_input('.'))
+
+
+					elif command == "Game_Over":
+						self.OnGameEnd()
+						continue
+					oldstdin = stdin
+
+					sys.stdin = io.StringIO('go')
+					sys.stdin.flush()
+					#print (raw_input('.'))
+					# else:
+					# 	stderr.write('Unknown command: %s\n' % (command))
+					# 	stderr.flush()
+
+
+			except EOFError:
+				print("EOFError")
+				return
 		print ("End of While")
 
 	def setup_map(self, options):
@@ -214,8 +233,8 @@ class Bot(object):
 		self.board.ReadBoard('Theirs', options[1])
 
 	def update_map(self, options):
-		stdout.write("Updating a map\n")
-		stdout.flush()
+		sys.stdout.write("Updating a map\n")
+		sys.stdout.flush()
 		#My moves
 		#The options will be xstart, ystart, xend, yend
 		PlaceManager.updateBoard(int(options[0]), int(options[1]), int(options[2]), int(options[3]), self.board)
@@ -230,20 +249,11 @@ class Bot(object):
 		return output
 
 if __name__ == '__main__':
-	#Bot().run()
-	Bot().readStdin()
-	stdout.write('setup_map BoardSetup1.txt BoardSetup2')
-	stdout.flush()
-	stdout.write('go')
-	# def readStdin(self):
-	# 	line = stdin.readline()
-	# 	while line:
-	# 		readline = stdin.readline()
-			
-	# 		for line in self.readStdin():
-	# 			line = line.split()
-	# 			stdout(line)
-	# 			stdout.flush()
+	#Remember to load (restore) the tensor
+	game = Bot()
+	game.run()
+	#game.Trainer.saveTensor()
+	#game.OpponentTrainer.saveTensor()
 
 
 
