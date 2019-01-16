@@ -1,5 +1,7 @@
 from classes import StrategoBoard
-
+from classes import VisualBoard
+import wx
+import tkinter as tk
 board = StrategoBoard.StrategoBoard()
 
 board.setBoard()
@@ -7,6 +9,11 @@ board.setBoard()
 board.ReadBoard('Mine', 'BoardSetup1.txt')
 board.ReadBoard('Theirs', 'BoardSetup2.txt')
 
-print(board.getPiece(3, 8), board.getColor(3, 8))
+root = tk.Tk()
+#app = wx.App(0)
+Visual = VisualBoard.VisualBoard(root, board)
 
-print(board.getPiece(3, 5), board.getColor(3, 5))
+root.mainloop()
+#Visual.MakeEmpty()
+#Visual.PrintBoard()
+

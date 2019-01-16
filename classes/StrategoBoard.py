@@ -58,7 +58,7 @@ class StrategoBoard():
 
 
 	
-
+	#Accessors
 	def getPiece(self, x, y):
 		return self.MapData[x][y][1]
 
@@ -73,9 +73,9 @@ class StrategoBoard():
 		if self.MapData[x][y] == ['N','N','N']: return False
 		return True
 
-	#To make lists of stuff
+	#To make lists of stuff for the Neural Net
 
-
+	#Returns a list of all the known enemies' locations
 	def knownEnemy(self):
 		theirs = []
 		for i in range(0, len(self.MapData)):
@@ -84,6 +84,7 @@ class StrategoBoard():
 					theirs.append([i,j])
 		return theirs
 
+	#Returns a list of all the enemies' locations
 	def totalEnemy(self):
 		theirs = []
 		for i in range(0, len(self.MapData)):
@@ -91,21 +92,20 @@ class StrategoBoard():
 				theirs.append([i, j])
 		return theirs
 
-	#Returns the full tuple behind the list
+	#Returns the full tuple behind the board
 	def getFull(self, x, y):
 		return self.MapData[x][y]
 
-	#Gets where your army is on the map
+	##Returns a list of locations for your pieces
 	def getArmy(self, side):
 		mine  = []
 		for i in range(0, 10):
 			for j in range (0, 10):
 				if self.getColor(i, j) == side:
-					mine.append([i,j])
-		#Returns a list of locations for your pieces
+					mine.append([i,j])	
 		return mine
 
-	#Returns if a piece can move or not
+	#Returns if a piece can move or not in ANY direction (Boolean)
 	def canMove(self, x, y):
 		if self.getPiece(x, y) == 'B':
 			return False
@@ -286,19 +286,20 @@ class StrategoBoard():
 
 		return possibleMoves
 
+	# Prints the whole board (In the form of the [piece, side])
 	def printTensor(self):
 		output = ""
 		for i in range(0, 10):
 			for j in range(0, 10):
-				if self.getPiece(i, j) != 10:	
+				# if self.getPiece(i, j) != 10:	
 					#To make sure it lines up well
-					output += "{:<10}".format(str(self.getPiece(i, j))+","+str(self.getColor(i,j))+" ")
-				else:
-					output += "{:<10}".format(str(self.getPiece(i, j))+","+str(self.getColor(i,j))+" ")
-
+				output += "{:<10}".format(str(self.getPiece(i, j))+","+str(self.getColor(i,j))+" ")
+				# else:
+				# 	output += "{:<10}".format(str(self.getPiece(i, j))+","+str(self.getColor(i,j))+" ")
 			output += '\n'
 		return output
 
+	#Returns if anyone won
 	def DidWin(self):
 		flagCount = 0
 		for i in range(0, 10):
@@ -311,14 +312,35 @@ class StrategoBoard():
 			return False
 		return True
 
+	#Returns who won by scanning the board for the flag that is still standing
+	#DO NOT CALL THIS IF FUNCTION DidWin RETURNS FALSE!!!
 	def WhoWon(self):
 		for i in range(0, 10):
 			for j in range(0, 10):
 				if self.getPiece(i, j) == 'F':
 					return self.getColor(i, j)
 
-
 	#Should I make a print board function??
-
+	#Making it now
 	#Maybe make a human interpretation??
+
+	#memorized is a boolean toggling if the player has to keep track of all of the opponents pieces
+	def PrintMySide(self, side, memorized):
+		output = ""
+
+		for x in range(0,10):
+			for y in range(0, 10):
+				if self.getColor(x, y) == side:
+					output += "{:<10}".format(str(self.getPiece(x,y))+","+str(self.getColor(x,y))+" ")
+				elif self.getColor(x,y) != side and memorized == True:
+					output += "{:<10}".format(str(self.getPiece(x,y))+","+str(self.getColor(x,y))+" ")
+				elif self.getColor(x,y) != side and memorized == False:
+					output += "{:<10}".format(str(self.getColor(x,y)) + " ")
+				else:
+					output += "{:<10}".format(str(self.getPiece(x,y)+",")+str(self.getColor(x,y))+" ")
+			output += '\n'
+		return output
+
+
+
 		

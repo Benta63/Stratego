@@ -138,7 +138,7 @@ class Trainer(object):
 
 	def init_episode(self, board, epnum, steps):
 		if epnum == 0:
-			self.targetOps = self.updateTargetGraph(tf.trainable_variables(),self.tau)
+			self.targetOps = self.updateTargetGraph(tf.trainable_variables(), self.tau)
 
 			#Setting the random action decrease
 			self.e = self.startE
@@ -190,17 +190,21 @@ class Trainer(object):
 
 		#Saving experience to buffer
 		self.episodeBuffer.add(np.reshape(np.array([self.s, self.a1, self.place, r, s1]), [1,5]))
+		self.myBuffer.add
 
 		if total_steps > self.pre_steps:
 			if self.e > self.endE:
 				self.e -= self.stepDrop
 
-			if total_steps % (self.update_freq) == 0:
+			if total_steps % (self.updates) == 0:
 				#Get some randomness
 				trainBatch = self.myBuffer.sample(self.batch_size)
-				 #Below we operate the neural network
-				P1 = self.sess.run(self.mainPN.predict,feed_dict={self.mainPN.X:np.vstack(trainBatch[:,4])})
-				P2 = self.sess.run(self.targetPN.predict,feed_dict={self.targetPN.X:np.vstack(trainBatch[:,4])})
+				 #Below we operate the neural network'
+				print("Predict: " + str(self.mainPN.predictPiece) + "\n")
+				print("MainPN: " + str(self.mainPN.X))
+				print("VStack: " + str(np.vstack(trainBatch[:,3])))
+				P1 = self.sess.run(self.mainPN.predictPiece,feed_dict={self.mainPN.X:np.vstack(trainBatch[:3])})
+				P2 = self.sess.run(self.targetPN.predictPiece,feed_dict={self.targetPN.X:np.vstack(trainBatch[:3])})
 
 				end_multiplier = - (trainBatch[:,5] - 1)
 				 
@@ -211,7 +215,6 @@ class Trainer(object):
 				up = self.sess.run(self.mainPN.updateModel, feed_dict={self.mainPN.X:np.vstack(trainBatch[:,0]),
 				 					self.mainPN.targetQ:targetP,
 				 					self.mainPN.action:trainBatch[:, 1]})
-
 
 				self.updateTarget(self.targetOps)
 
@@ -226,11 +229,14 @@ class Trainer(object):
 		self.s = s1
 
 	def saveTensor(self):
+		print ("Saving")
 		saver = tf.train.Saver()
+
 		#self.sess.run(self.init)
 		print(self.sess)
-		saveTo = saver.save(self.sess, self.path)
-
+		path = self.path + "/model.ckpt"
+		saveTo = saver.save(self.sess, path)
+		print ("Saved")
 		return saveTo
 		#For the Main NN
 		'''graph1 = tf.Graph()
@@ -257,6 +263,7 @@ class Trainer(object):
 
 
 	def restoreTensor(self):
+		print ("Restoring")
 		with restored_graph.as_default():
 			with tf.Session() as sess:
 				tf.saved_model.loader.load(sess, [tag_constants.SERVING]

@@ -46,6 +46,7 @@ class Bot(object):
 		self.newGame = True
 		self.gamesPlayed += 1
 
+
 	def onSessionEnd(self):
 		print("Done")
 		self.Trainer.saveTensor()
@@ -55,9 +56,11 @@ class Bot(object):
 
 		#If they lose a piece on the first turn, e.g. scouting, its fine
 		#I may want to change this to the first few turns.
+		delta_amount = 0
+		delta_pieces_known = 0
+
 		if self.turn > 2:
 			delta_pieces_known = abs(len(self.board.knownEnemy()) - len(self.board.totalEnemy()))
-			delta_amount = 0
 			for i in range(0, 10):
 				for j in range(0, 10):
 					#Subtract my pieces from theirs. 
@@ -89,9 +92,8 @@ class Bot(object):
 							delta_amount -= 1000
 						else: 
 							delta_amount = delta_amount - float(self.board.getPiece(i, j))
-
-			return delta_amount + (delta_pieces_known * 2.1)
-		return 0
+		return delta_amount + (delta_pieces_known * 2.1)
+		
 
 	# def readStdin(self):
 	# 	#self.run()
@@ -132,16 +134,31 @@ class Bot(object):
 				if command == 'setup_map':
 					self.setup_map(parts[1:])
 				elif command == 'go':
+
+					#If we won, then we want to reset. 
 					if self.board.DidWin() == True:
 						winner = self.board.WhoWon()
 						self.gamesPlayed += 1
 						self.turn = 0
+
+						#Updating the reward
+						if winner == 'Mine': 
+							self.reward += 1000
+							self.opponent_reward -= 1000 #Is this neccesary??
+						else: 
+							self.reward -= 1000
+							self.opponent_reward += 1000
+
+						#Some output
 						output = "The Winner is: {}\n".format(winner)
 						sys.stdout.write(output)
 						sys.stdout.flush()
 						f = open(self.data, 'a+')
 						f.write(output)
 						f.close()
+
+						#Let's set the board up again
+						self.setup_map(self.map)
 
 
 
@@ -174,6 +191,7 @@ class Bot(object):
 					#stdout.flush()
 					
 					self.reward = self.compute_reward()
+
 					rewards = np.array([self.reward])
 					print(rewards)
 					if self.gamesPlayed == 0:
@@ -181,14 +199,16 @@ class Bot(object):
 					else:
 						self.Trainer.trainReward(self.board, rewards, self.turn)
 					f = open(self.reward_place, 'a+')
-					sys.stdout.write("Reward: " + str(self.reward) + "\n")
-					write_str = str(self.reward)
+					sys.stdout.write("Reward: " + str(self.reward) + "\n" + str(self.board.DidWin()))
+
+					write_str = str(self.reward)+"\n"
 					f.write(write_str)
 					f.close()
 					f = open(self.data, 'a+')
 					f.write(str(self.board.printTensor())+"\n")
 					f.close()
 					sys.stdin.flush()
+
 					
 
 					
@@ -210,7 +230,7 @@ class Bot(object):
 						self.OnGameEnd()
 						continue
 					oldstdin = stdin
-
+					#strip?
 					sys.stdin = io.StringIO('go')
 					sys.stdin.flush()
 					#print (raw_input('.'))
@@ -231,6 +251,7 @@ class Bot(object):
 		#for i in range (0, len(options)):
 		self.board.ReadBoard('Mine', options[0])
 		self.board.ReadBoard('Theirs', options[1])
+		self.map = options
 
 	def update_map(self, options):
 		sys.stdout.write("Updating a map\n")

@@ -18,3 +18,7 @@ For stratego setups
 
 On the Adam Optimizer in tf
 https://arxiv.org/pdf/1412.6980v8.pdf
+
+Testing the system??
+See if I can setup a survey ish for psych credit?
+
