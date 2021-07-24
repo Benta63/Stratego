@@ -1,3 +1,4 @@
+# Defines the board of a stratego game
 import os
 class StrategoBoard():
 	def __init__(self):
@@ -5,18 +6,21 @@ class StrategoBoard():
 		self.setBoard()
 		#I may do something with this later. Idk
 		self.attack_threshold = 0.0
-		#Going to be tuples, first color, second piece
+
+		'''For each board space, it will be (color, piece, known). (L,L,L) in the 
+		case of lakes.
+		S = Spy, 1-10 (strings) = Numbers, B = Bomb, F = Flag
+		Color is 'Mine' or 'Theirs'
+		Known is True of False
+		We automatically know our own pieces
+		Get the coordinates of the lakes
+		First we initialize an empty board'''
 	
-	#Makes a blank board
-	#Call this first before anything else
 	def setBoard(self):
-		#Lakes are [4, 2] [4,3] [4,6] [4,7]
-		#		   [5,2] [5,3] [5,6] [5,7] [row, column]
-		#For each board space, it will be (color, piece, known). (L,L,L) in the case of lakes.
-		#S = Spy, 1-10 (strings) = Numbers, B = Bomb, F = Flag
-		#Color is 'Mine' or 'Theirs'
-		#Get the coordinates of the lakes
-		#First we initialize an empty board
+		'''Makes a blank board (with lakes)'''
+		# Lakes are [4,2] [4,3] [4,6] [4,7]
+		#		    [5,2] [5,3] [5,6] [5,7] 
+
 		for i in range(0, 10):
 			for j in range(0,10):
 				if i == 4:
@@ -32,21 +36,26 @@ class StrategoBoard():
 					self.MapData[i][j] = ['N','N','N']
 
 
-	#Reads in the board setup from a text file
 	def ReadBoard(self, side, text):
-		#First, we organize the file
+		'''Reads in the board setup from a text file. Side is Mine or Theirs and
+			is used to denote the Known Boolean. Also, which side of the board
+			they are setup on.
+		'''
+
+		# First, we organize the file
 		f = open(text)
 		lines = f.readlines()
 		data = [line.split() for line in lines]
 
-		#Which pieces are we reading in?
+		# Which pieces are we reading in?
 		if side == "Mine":
 			for line in range(0, len(data)):
 				for col in range(0, 10):
 					self.MapData[line][col] = (['Mine', data[line][col], 'K'])
 		else:
-			#First of all, their pieces are on the other side, so the first line is actually the tenth
-			#So, 0 is 9, 1 is 8, 3 is 7
+			# First of all, their pieces are on the other side, so the first line 
+			# is actually the tenth
+			# So, 0 is 9, 1 is 8, 3 is 7
 			for line in range(0, len(data)):
 				for col in range(0, 10):
 					#For testing purposes
@@ -55,10 +64,9 @@ class StrategoBoard():
 					#Remove the above two lines. Unnecesary. 
 					else:
 						self.MapData[9-line][col] = (['Theirs', data[line][col], 'U'])
-
-
 	
 	#Accessors
+
 	def getPiece(self, x, y):
 		return self.MapData[x][y][1]
 
@@ -75,8 +83,8 @@ class StrategoBoard():
 
 	#To make lists of stuff for the Neural Net
 
-	#Returns a list of all the known enemies' locations
 	def knownEnemy(self):
+		'''Returns a list of all known enemies' locations'''
 		theirs = []
 		for i in range(0, len(self.MapData)):
 			for j in range(0, len(self.MapData[i])):
@@ -84,20 +92,20 @@ class StrategoBoard():
 					theirs.append([i,j])
 		return theirs
 
-	#Returns a list of all the enemies' locations
 	def totalEnemy(self):
+		'''Returns a list of all the enemies' locations'''
 		theirs = []
 		for i in range(0, len(self.MapData)):
 			for j in range(0, len(self.MapData[i])):
 				theirs.append([i, j])
 		return theirs
 
-	#Returns the full tuple behind the board
 	def getFull(self, x, y):
+		'''Returns the full board including how its populated.'''
 		return self.MapData[x][y]
 
-	##Returns a list of locations for your pieces
 	def getArmy(self, side):
+		'''Returns a list of locations for your pieces'''
 		mine  = []
 		for i in range(0, 10):
 			for j in range (0, 10):
@@ -105,23 +113,36 @@ class StrategoBoard():
 					mine.append([i,j])	
 		return mine
 
-	#Returns if a piece can move or not in ANY direction (Boolean)
+	
 	def canMove(self, x, y):
+		'''Given a coordinate, returns if a piece can move or not in ANY direction
+		 (Boolean)
+		'''
+
+		# Piece doesn't exist
+		if self.getPiece(x, y) == 'N':
+			return False
+
+		# Bombs and flags can't move
 		if self.getPiece(x, y) == 'B':
 			return False
 		if self.getPiece(x, y) == 'F':
 			return False
+
+
 		player = ''
 		if self.getColor(x,y) =='Mine': player = 'Mine'
 		else: player = 'Theirs'
-		#Four directions. It doesn't matter if it's a 2 or not. If it's blocked in, it's blocked in
+		#Four directions. Check if its blocked in.
 		possibleMoves = [[x+1, y], [x, y+1], [x-1, y], [x, y-1]]
 		for i in possibleMoves:
+			# Are we against a wall?
 			if i[0] >= 0 and i[0] < 10 and i[1] >= 0 and i[1] < 10:
 				#If there's nothing there, it's possible to move there
 				if self.isThere(i[0], i[1]) == False:
 					return True
-				#It's not a lake and it's not my piece
+				
+				# You can take your opponent's piece. 
 				if player == 'Theirs' and (self.getColor(i[0], i[1]) =='Mine'):
 					return True
 
@@ -129,8 +150,8 @@ class StrategoBoard():
 					return True
 		return False
 
-	#Returns all pieces in your army that can move
 	def getMoving(self, side):
+		'''Returns a list of all the pieces in your army (side) that can move.'''
 		army = self.getArmy(side)
 		moving = []
 		for i in army:
@@ -141,6 +162,13 @@ class StrategoBoard():
 
 	#Returns a list of where a piece can move
 	def moveWhere(self, x, y):
+		'''Returns a list of where a specific piece (denoted by x,y coords) can 
+			move.
+		'''
+
+		if getPiece(x,y) == 'N':
+			# There's no piece here
+			return False
 		if self.canMove(x, y) == False:
 			return []
 		possibleMoves = []
@@ -150,114 +178,77 @@ class StrategoBoard():
 		else: player = 'Theirs'
 
 		if self.getPiece(x, y) == '2':
-			print(x, y)
+			# 2s can move as far as they want in one direction. (Not diagonal!)
+			# print(x, y)
+			moves = [0:10]
+
+			Lakes = [[4,2],[4,3],[4,6],[4,7],[5,2],[5,3],[5,6],[5,7]]
+
+			# We have four directions to check.
+
+			# Right
 			if x < 9:
-				print('if 1 (2)\n')
-				if player == 'Theirs' and (self.getColor(x+1, y) =='Mine' or self.getColor(x+1, y) == 'N'):
-					too_far = False
-					for i in range(x+1, 10):
-						if self.getColor(i, y) != 'Theirs' and self.getColor(i,y) != 'L':
-							if self.getColor(x-1, y) == 'Mine':
-								too_far = True
-							if(too_far):
-								continue
-
-							possibleMoves.append([i,y])
-				elif player == 'Mine': 
-					self.getColor(x+1, y)
-					too_far = False
-					for i in range(x+1, 10):
-						print(i)
-						if self.getColor(i, y) == 'Mine':
-							break
-						if self.getColor(i,y) == 'L':
-							break
-						if self.getColor(i, y) == 'Theirs':
-							print(i, y)
-							print("Break Theirs")
-							possibleMoves.append([i, y])
-							break
-						print(self.getPiece(i, y))
-						possibleMoves.append([i,y])				
-
+				# We can go further right (If there's no pieces there)
+				for space in range(x, 10):
+					if getPiece(space, y) == 'N':
+						possibleMoves.append([space, y])
+					elif getPiece(space, y) == 'Theirs' and player == 'Mine':
+						possibleMoves.append([space, y])
+						# We stop here as there's a piece and we have to reveal
+						break
+					elif getPiece(space, y) == 'Mine' and player == 'Theirs':
+						possibleMoves.append([space, y])
+						# We stop here as there's a piece and we have to reveal
+						break
+			# Left
 			if x > 0:
-				print('if 2 (2)\n')
-				if player == 'Theirs' and (self.getColor(x-1, y) =='Mine' or self.getColor(x-1, y) == 'N'):
-					too_far = False
-					for i in range(x-1, -1, -1):
-						if self.getColor(i, y) != 'Theirs' and self.getColor(i,y) != 'L':
-							if self.getColor(i+1, y) == 'Mine':
-								too_far = True
-							if(too_far):
-								continue
-							possibleMoves.append([i,y])
-				elif player == 'Mine':
-					print(player)
-					for i in range(x-1, -1, -1):
-						print(i)
-						if self.getColor(i, y) == 'Mine':
-							break
-						if self.getColor(i,y) == 'L':
-							break
-						if self.getColor(i, y) == 'Theirs':
-							print(i, y)
-							print("Break Theirs")
-							possibleMoves.append([i, y])
-							break
-						print(self.getPiece(i, y))
-						possibleMoves.append([i,y])
+				# We can go further left (If there are no pieces there)
+				for space in range(x, 0, -1):
+					if getPiece(space, y) == 'N':
+						possibleMoves.append([space, y])
+					elif getPiece(space, y) == 'Theirs' and player == 'Mine':
+						possibleMoves.append([space, y])
+						# We stop here as there's a piece and we have to reveal
+						break
+					elif getPiece(space, y) == 'Mine' and player == 'Theirs':
+						possibleMoves.append([space, y])
+						# We stop here as there's a piece and we have to reveal
+						break
+			# Up
 			if y < 9:
-				print('if 3 (2)\n')
-				if player == 'Theirs' and (self.getColor(x, y+1) =='Mine' or self.getColor(x, y+1) == 'N'):
-					too_far = False
-					for i in range(y+1, 10):
-						if self.getColor(x, i) != 'Theirs' and self.getColor(x,i) != 'L':
-							if self.getColor(x, i-1) == 'Theirs':
-								too_far = True
-							if(too_far):
-								continue
-							possibleMoves.append([x, i])
+				for space in range(y, 10):
+					if getPiece(x, space) == 'N':
+						possibleMoves.append([x, space])
+					elif getPiece(x, space) == 'Theirs' and player == 'Mine':
+						possibleMoves.append([x, space])
+						# We stop here as there's a piece and we have to reveal
+						break
+					elif getPiece(x, space) == 'Mine' and player == 'Theirs':
+						possibleMoves.append([x, space])
+						# We stop here as there's a piece and we have to reveal
+						break
 
-				elif player == 'Mine':
-					for i in range(y+1, 10):
-						if self.getColor(x, i) == 'Mine':
-							break
-						if self.getColor(x,i) == 'L':
-							break
-						if self.getColor(x, i) == 'Theirs':
-							possibleMoves.append([x, i])
-							break
-						possibleMoves.append([x,i])
+			# Down
 			if y > 0:
-				print('if 4 (2)\n')
-				if player == 'Theirs' and (self.getColor(x, y-1) =='Mine' or self.getColor(x, y-1) == 'N'):
-					too_far = False
-					for i in range(y-1, -1, -1):
-						print(i)
-						if self.getColor(x, i) == 'Theirs':
-							break
-						if self.getColor(x,i) == 'L':
-							break
-						if self.getColor(x, i+1) == 'Theirs':
-							possibleMoves.append([x,i])
-						possibleMoves.append([x,i])
-				if player == 'Mine' and (self.getColor(x, y-1) == 'Theirs' or self.getColor(x, y-1) == 'N'):
-					print(self.getColor(x, y-1))
-					too_far = False
-					for i in range(y-1, -1, -1):
-						if self.getColor(x, i) == 'Mine':
-							break
-						if self.getColor(x,i) == 'L':
-							break
-						if self.getColor(x, i) == 'Theirs':
-							possibleMoves.append([x, i])
-							break
-						possibleMoves.append([x,i])
+				for space in range(y, 0, -1):
+					if getPiece(x, space) == 'N':
+						possibleMoves.append([x, space])
+					elif getPiece(x, space) == 'Theirs' and player == 'Mine':
+						possibleMoves.append([x, space])
+						# We stop here as there's a piece and we have to reveal
+						break
+					elif getPiece(x, space) == 'Mine' and player == 'Theirs':
+						possibleMoves.append([x, space])
+						# We stop here as there's a piece and we have to reveal
+						break
 
-		else:
+		else: #canMove already checks for bombs and flags
 			print(x, y)
 			if x < 9:
+				# if self.piece(x+1, y) == 'N':
+				# 	possibleMoves.append([x+1, y])
 				print('if 1\n')
+
 				if player == 'Theirs' and (self.getColor(x+1, y) =='Mine' or self.getColor(x+1, y) == 'N'):
 					possibleMoves.append([x+1, y])
 				if player == 'Mine' and (self.getColor(x+1, y) == 'Theirs' or self.getColor(x+1, y) == 'N'):
