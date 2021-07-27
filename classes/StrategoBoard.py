@@ -180,9 +180,6 @@ class StrategoBoard():
 		if self.getPiece(x, y) == '2':
 			# 2s can move as far as they want in one direction. (Not diagonal!)
 			# print(x, y)
-			moves = [0:10]
-
-			Lakes = [[4,2],[4,3],[4,6],[4,7],[5,2],[5,3],[5,6],[5,7]]
 
 			# We have four directions to check.
 
@@ -243,36 +240,36 @@ class StrategoBoard():
 						break
 
 		else: #canMove already checks for bombs and flags
-			print(x, y)
 			if x < 9:
-				# if self.piece(x+1, y) == 'N':
-				# 	possibleMoves.append([x+1, y])
-				print('if 1\n')
-
-				if player == 'Theirs' and (self.getColor(x+1, y) =='Mine' or self.getColor(x+1, y) == 'N'):
-					possibleMoves.append([x+1, y])
-				if player == 'Mine' and (self.getColor(x+1, y) == 'Theirs' or self.getColor(x+1, y) == 'N'):
+				if self.piece(x+1, y) == 'N':
+				 	possibleMoves.append([x+1, y])
+				if player == 'Theirs' and self.getColor(x+1, y) == 'Mine':
+				 	possibleMoves.append([x+1], y)
+				if player == 'Mine' and self.getColor(x+1, y) == 'Theirs':
 					possibleMoves.append([x+1, y])
 
 			if x > 0:
-				print('if 2\n') 
-				if player == 'Theirs' and (self.getColor(x-1, y) =='Mine' or self.getColor(x-1, y) == 'N'):
+				if self.piece(x-1, y) == 'N':
+				 	possibleMoves.append([x-1, y])
+				if player == 'Theirs' and self.getColor(x-1, y) =='Mine':
 					possibleMoves.append([x-1, y])
-				if player == 'Mine' and (self.getColor(x-1, y) == 'Theirs' or self.getColor(x-1, y) == 'N'):
+				if player == 'Mine' and self.getColor(x-1, y) == 'Theirs':
 					possibleMoves.append([x-1, y])
 
 			if y < 9:
-				print('if 3\n')
-				if player == 'Theirs' and (self.getColor(x, y+1) =='Mine' or self.getColor(x, y+1) == 'N'):
+				if self.piece(x, y+1) == 'N':
+				 	possibleMoves.append([x, y+1])
+				if player == 'Theirs' and self.getColor(x, y+1) =='Mine':
 					possibleMoves.append([x, y+1])
-				if player == 'Mine' and (self.getColor(x, y+1) == 'Theirs' or self.getColor(x, y+1) == 'N'):
+				if player == 'Mine' and self.getColor(x, y+1) == 'Theirs':
 					possibleMoves.append([x, y+1])
 
 			if y > 0:
-				print('if 4\n')
-				if player == 'Theirs' and (self.getColor(x, y+1) =='Mine' or self.getColor(x, y-1) == 'N'):
+				if self.piece(x, y-1) == 'N':
+				 	possibleMoves.append([x, y-1])
+				if player == 'Theirs' and self.getColor(x, y+1) =='Mine':
 					possibleMoves.append([x, y-1])
-				if player == 'Mine' and (self.getColor(x, y-1) == 'Theirs' or self.getColor(x, y-1) == 'N'):
+				if player == 'Mine' and self.getColor(x, y-1) == 'Theirs':
 					possibleMoves.append([x, y-1])
 
 		return possibleMoves
@@ -306,14 +303,11 @@ class StrategoBoard():
 	#Returns who won by scanning the board for the flag that is still standing
 	#DO NOT CALL THIS IF FUNCTION DidWin RETURNS FALSE!!!
 	def WhoWon(self):
+		assert(self.DidWin() == True)
 		for i in range(0, 10):
 			for j in range(0, 10):
 				if self.getPiece(i, j) == 'F':
 					return self.getColor(i, j)
-
-	#Should I make a print board function??
-	#Making it now
-	#Maybe make a human interpretation??
 
 	#memorized is a boolean toggling if the player has to keep track of all of the opponents pieces
 	def PrintMySide(self, side, memorized):
